@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Edit Daily Attendance</title>
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+
+import {
+getDatabase,
+ref,
+get,
+update
+}
+from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+
+
+const firebaseConfig = {
+
+apiKey: "AIzaSyCLdqMLxR9ZKEeS6zDHv-rkbSt-PTbDtMc",
+
+authDomain: "attendance-tracker-7256b.firebaseapp.com",
+
+databaseURL:
+"https://attendance-tracker-7256b-default-rtdb.firebaseio.com",
+
+projectId: "attendance-tracker-7256b"
+
+};
+
+
+const app = initializeApp(firebaseConfig);
+
+const db = getDatabase(app);
+
+
+const sem =
+localStorage.getItem("currentSem");
+
+
+let allData = {};
+
+let edits = {};
+
+
+
+/* load attendance */
+
+async function loadAttendance(){
+
+let snap =
+await get(
+
+ref(db,
+"semesters/"+sem+"/attendance")
+
+);
+
+allData = snap.val() || {};
+
+}
+
+
+
+loadAttendance();
+
+
+
+/* show dates */
+
+window.loadDates = function(){
+
+let from =
+document.getElementById("from").value;
+
+let to =
+document.getElementById("to").value;
+
+
+if(!from || !to){
+
+alert("Select dates");
+
+return;
+
+}
+
+
+let start =
+new Date(from);
+
+let end =
+new Date(to);
+
+
+let html="";
+
+
+while(start<=end){
+
+let d =
+start.toISOString().split("T")[0];
+
+
+let status =
+allData[d]?.fullDay || "";
+
+
+html+=`
+
+<div class="row">
+
+<div class="date">
+
+${d}
+
+</div>
+
+
+<div class="btns">
+
+<button
+
+class="btn p ${status=="present"?"active":""}"
+
+onclick="setStatus('${d}','present')">
+
+P
+
+</button>
+
+
+<button
+
+class="btn a ${status=="absent"?"active":""}"
+
+onclick="setStatus('${d}','absent')">
+
+A
+
+</button>
+
+
+<button
+
+class="btn h ${status=="leave"?"active":""}"
+
+onclick="setStatus('${d}','leave')">
+
+H
+
+</button>
+
+
+</div>
+
+</div>
+
+`;
+
+
+start.setDate(start.getDate()+1);
+
+}
+
+
+document.getElementById("list")
+.innerHTML = html;
+
+};
+
+
+
+/* edit */
+
+window.setStatus = function(date,status){
+
+edits[date] = {
+
+fullDay: status
+
+};
+
+
+/* highlight instantly */
+
+loadDates();
+
+};
+
+
+
+/* update server */
+
+window.updateServer = async function(){
+
+await update(
+
+ref(db,
+"semesters/"+sem+"/attendance"),
+
+edits
+
+);
+
+
+alert("Updated successfully");
+
+};
+
+</script>
+
+
+
+<style>
+
+body{
+
+margin:0;
+
+height:100vh;
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+font-family:Segoe UI;
+
+background:
+
+linear-gradient(
+rgba(70,0,120,0.75),
+rgba(30,0,80,0.9)
+),
+
+url("https://images.unsplash.com/photo-1506744038136-46273834b3fb");
+
+background-size:cover;
+
+}
+
+
+
+/* container */
+
+.container{
+
+width:420px;
+
+height:560px;
+
+padding:25px;
+
+border-radius:20px;
+
+background:rgba(255,255,255,0.1);
+
+backdrop-filter:blur(15px);
+
+color:white;
+
+display:flex;
+
+flex-direction:column;
+
+}
+
+
+
+/* date range */
+
+.range{
+
+display:flex;
+
+gap:10px;
+
+align-items:center;
+
+margin-bottom:15px;
+
+}
+
+
+
+input{
+
+padding:8px;
+
+border:none;
+
+border-radius:10px;
+
+}
+
+
+
+/* load button */
+
+.load{
+
+padding:8px 14px;
+
+border:none;
+
+border-radius:20px;
+
+cursor:pointer;
+
+background:white;
+
+}
+
+
+
+/* list */
+
+.list{
+
+flex:1;
+
+overflow:auto;
+
+}
+
+
+
+/* row */
+
+.row{
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+padding:10px;
+
+margin-bottom:10px;
+
+border-radius:10px;
+
+background:rgba(255,255,255,0.08);
+
+}
+
+
+
+.date{
+
+font-size:14px;
+
+}
+
+
+
+/* buttons */
+
+.btn{
+
+width:34px;
+
+height:34px;
+
+border-radius:50%;
+
+border:none;
+
+cursor:pointer;
+
+margin-left:6px;
+
+font-weight:bold;
+
+}
+
+
+
+.p{
+
+background:#16a34a;
+
+color:white;
+
+}
+
+
+
+.a{
+
+background:#dc2626;
+
+color:white;
+
+}
+
+
+
+.h{
+
+background:#eab308;
+
+color:black;
+
+}
+
+
+
+/* selected */
+
+.active{
+
+border:3px solid white;
+
+transform:scale(1.15);
+
+}
+
+
+
+/* update */
+
+.update{
+
+margin-top:12px;
+
+padding:12px;
+
+border:none;
+
+border-radius:25px;
+
+cursor:pointer;
+
+background:
+
+linear-gradient(
+120deg,
+#8b5cf6,
+#a855f7,
+#7c3aed
+);
+
+color:white;
+
+font-size:15px;
+
+}
+
+</style>
+
+<link rel="stylesheet" href="superfast-clean-ui.css">
+<link rel="stylesheet" href="ultra-ui.css">
+</head>
+
+
+
+<body>
+
+
+
+<div class="container">
+
+
+<div class="range">
+
+FROM
+
+<input type="date" id="from">
+
+
+TO
+
+<input type="date" id="to">
+
+
+<button class="load"
+onclick="loadDates()">
+
+Load
+
+</button>
+
+</div>
+
+
+
+<div id="list"
+class="list">
+
+</div>
+
+
+
+<button class="update"
+
+onclick="updateServer()">
+
+Update Server
+
+</button>
+
+
+</div>
+
+
+
+<script src="superfast-ui.js" defer></script>
+<script src="ultra-ui.js" defer></script>
+</body>
+
+</html>

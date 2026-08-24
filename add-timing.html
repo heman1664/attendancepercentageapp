@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<title>Add Timings</title>
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+
+import {
+getDatabase,
+ref,
+push,
+onValue
+}
+from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+
+
+const firebaseConfig = {
+
+apiKey: "AIzaSyCLdqMLxR9ZKEeS6zDHv-rkbSt-PTbDtMc",
+
+authDomain: "attendance-tracker-7256b.firebaseapp.com",
+
+databaseURL:
+"https://attendance-tracker-7256b-default-rtdb.firebaseio.com",
+
+projectId: "attendance-tracker-7256b",
+
+storageBucket: "attendance-tracker-7256b.appspot.com",
+
+messagingSenderId: "512459479971",
+
+appId: "1:512459479971:web:3e69c4b1cc84388fce9816"
+
+};
+
+
+const app = initializeApp(firebaseConfig);
+
+const db = getDatabase(app);
+
+
+/* current sem */
+
+const sem =
+localStorage.getItem("currentSem");
+
+document.getElementById("title").innerText =
+"Semester "+sem+" Timings";
+
+
+
+/* add slot */
+
+window.addSlot = function(){
+
+const type =
+document.getElementById("type").value;
+
+const start =
+document.getElementById("start").value;
+
+const end =
+document.getElementById("end").value;
+
+
+if(!start || !end){
+
+alert("enter time");
+
+return;
+
+}
+
+
+/* realtime save */
+
+push(
+
+ref(db,
+"semesters/"+sem+"/timings"),
+
+{
+type:type,
+start:start,
+end:end
+}
+
+);
+
+
+/* clear */
+
+start.value="";
+end.value="";
+
+};
+
+
+
+/* realtime display */
+
+onValue(
+
+ref(db,
+"semesters/"+sem+"/timings"),
+
+(snapshot)=>{
+
+let html="";
+
+let count=1;
+
+snapshot.forEach(child=>{
+
+let t = child.val();
+
+html +=
+
+"<div class='slot'>"+
+count+". "+t.type+
+" ("+t.start+
+" - "+t.end+")"+
+"</div>";
+
+count++;
+
+});
+
+document.getElementById("list")
+.innerHTML = html;
+
+}
+
+);
+
+</script>
+
+
+
+<style>
+
+body{
+
+margin:0;
+
+height:100vh;
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+font-family:Segoe UI;
+
+background:
+
+linear-gradient(
+rgba(70,0,120,0.65),
+rgba(30,0,80,0.85)
+),
+
+url("https://images.unsplash.com/photo-1506744038136-46273834b3fb");
+
+background-size:cover;
+
+}
+
+
+
+/* glass card */
+
+.container{
+
+width:360px;
+
+padding:40px 30px;
+
+border-radius:22px;
+
+background:rgba(255,255,255,0.10);
+
+backdrop-filter:blur(15px);
+
+box-shadow:0 8px 30px rgba(0,0,0,0.35);
+
+text-align:center;
+
+}
+
+
+
+/* title */
+
+h2{
+
+color:white;
+
+margin-bottom:20px;
+
+}
+
+
+
+/* inputs */
+
+select,
+input{
+
+width:100%;
+
+padding:12px 18px;
+
+margin:12px 0;
+
+border-radius:30px;
+
+border:none;
+
+outline:none;
+
+font-size:15px;
+
+background:rgba(255,255,255,0.85);
+
+box-sizing:border-box;
+
+}
+
+
+
+/* button */
+
+button{
+
+width:100%;
+
+padding:12px;
+
+margin-top:12px;
+
+border:none;
+
+border-radius:25px;
+
+font-size:15px;
+
+cursor:pointer;
+
+color:white;
+
+background:
+
+linear-gradient(
+120deg,
+#8b5cf6,
+#a855f7,
+#7c3aed
+);
+
+background-size:250%;
+
+}
+
+
+
+button:hover{
+
+animation:move 2s linear infinite;
+
+}
+
+
+
+@keyframes move{
+
+0%{background-position:0%}
+100%{background-position:200%}
+
+}
+
+
+
+/* list */
+
+.slot{
+
+background:rgba(255,255,255,0.15);
+
+padding:8px;
+
+margin:6px;
+
+border-radius:10px;
+
+color:white;
+
+}
+
+
+
+</style>
+
+
+
+<link rel="stylesheet" href="superfast-clean-ui.css">
+<link rel="stylesheet" href="ultra-ui.css">
+</head>
+
+
+
+<body>
+
+
+
+<div class="container">
+
+<h2 id="title"></h2>
+
+
+
+<select id="type">
+
+<option value="period">
+
+Period
+
+</option>
+
+<option value="break">
+
+Break
+
+</option>
+
+<option value="lunch">
+
+Lunch
+
+</option>
+
+</select>
+
+
+
+<input type="time" id="start">
+
+<input type="time" id="end">
+
+
+
+<button onclick="addSlot()">
+
+Add Timing
+
+</button>
+
+
+
+<div id="list"></div>
+
+
+
+<button onclick="window.location='timetable.html'">
+
+Next → Create Timetable
+
+</button>
+
+
+
+</div>
+
+
+
+<script src="superfast-ui.js" defer></script>
+<script src="ultra-ui.js" defer></script>
+</body>
+
+</html>

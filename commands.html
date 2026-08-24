@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Auto Fill Present</title>
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+
+import {
+getDatabase,
+ref,
+update
+}
+from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+
+
+const firebaseConfig = {
+
+apiKey:"AIzaSyCLdqMLxR9ZKEeS6zDHv-rkbSt-PTbDtMc",
+
+databaseURL:
+"https://attendance-tracker-7256b-default-rtdb.firebaseio.com"
+
+};
+
+const app=initializeApp(firebaseConfig);
+
+const db=getDatabase(app);
+
+
+/* semester */
+
+let sem =
+localStorage.getItem("viewSem") || "1";
+
+sem = sem.replace("sem","");
+
+
+window.insertPresent =
+async function(){
+
+let start =
+new Date("2026-01-05");
+
+let end =
+new Date(); // today
+
+
+let data={};
+
+
+while(start<=end){
+
+let date =
+start.toISOString().split("T")[0];
+
+let day =
+new Date(date)
+.toLocaleDateString(
+'en-US',
+{weekday:'long'}
+);
+
+
+/* sunday holiday */
+
+if(day=="Sunday"){
+
+data[date]={
+
+fullDay:"leave"
+
+};
+
+}
+
+
+/* other days present */
+
+else{
+
+data[date]={
+
+fullDay:"present"
+
+};
+
+}
+
+
+start.setDate(
+start.getDate()+1
+);
+
+}
+
+
+/* upload */
+
+await update(
+
+ref(
+db,
+"semesters/"+sem+"/attendance"
+),
+
+data
+
+);
+
+
+alert("Inserted successfully");
+
+};
+
+</script>
+
+
+
+<style>
+
+body{
+
+font-family:Segoe UI;
+
+background:#f5f6fa;
+
+padding:40px;
+
+text-align:center;
+
+}
+
+
+button{
+
+background:#27ae60;
+
+color:white;
+
+border:none;
+
+padding:15px 25px;
+
+font-size:18px;
+
+border-radius:6px;
+
+cursor:pointer;
+
+}
+
+</style>
+
+
+<link rel="stylesheet" href="superfast-clean-ui.css">
+<link rel="stylesheet" href="ultra-ui.css">
+</head>
+
+
+
+<body>
+
+
+<h2>
+
+Insert Present Attendance
+
+</h2>
+
+
+<p>
+
+From 05-01-2026 → Today  
+All present except Sunday
+
+</p>
+
+
+<button onclick="insertPresent()">
+
+Insert Now
+
+</button>
+
+
+<script src="superfast-ui.js" defer></script>
+<script src="ultra-ui.js" defer></script>
+</body>
+
+</html>

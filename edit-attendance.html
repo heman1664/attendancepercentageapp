@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Edit Attendance</title>
+
+<style>
+
+body{
+
+margin:0;
+height:100vh;
+
+display:flex;
+justify-content:center;
+align-items:center;
+
+font-family:Segoe UI;
+
+background:
+linear-gradient(
+rgba(70,0,120,0.75),
+rgba(30,0,80,0.9)
+),
+url("https://images.unsplash.com/photo-1506744038136-46273834b3fb");
+
+background-size:cover;
+
+}
+
+
+
+.box{
+
+width:420px;
+
+padding:40px;
+
+border-radius:20px;
+
+background:rgba(255,255,255,0.1);
+
+backdrop-filter:blur(15px);
+
+text-align:center;
+
+color:white;
+
+}
+
+
+
+h2{
+
+margin-bottom:30px;
+
+}
+
+
+
+/* buttons */
+
+.btn{
+
+width:100%;
+
+padding:14px;
+
+margin:12px 0;
+
+border:none;
+
+border-radius:30px;
+
+font-size:16px;
+
+cursor:pointer;
+
+color:white;
+
+background:
+
+linear-gradient(
+120deg,
+#8b5cf6,
+#a855f7,
+#7c3aed
+);
+
+transition:0.3s;
+
+}
+
+
+
+/* hover animation */
+
+.btn:hover{
+
+transform:scale(1.05);
+
+box-shadow:0 0 15px #a855f7;
+
+}
+
+</style>
+
+<link rel="stylesheet" href="superfast-clean-ui.css">
+<link rel="stylesheet" href="ultra-ui.css">
+</head>
+
+
+
+<body>
+
+
+
+<div class="box">
+
+
+<h2>
+
+Edit Attendance
+
+</h2>
+
+
+
+<button class="btn"
+
+onclick="gotoDaily()">
+
+Edit Daily Attendance
+
+</button>
+
+
+
+<button class="btn"
+
+onclick="gotoHourly()">
+
+Edit Hourly Attendance
+
+</button>
+
+
+
+<button class="btn"
+
+onclick="gotoPlacement()">
+
+Edit Placement Attendance
+
+</button>
+
+<button class="btn holiday-manager-btn"
+onclick="gotoHolidayManager()">
+
+Holiday Manager
+
+</button>
+
+
+
+</div>
+
+
+
+<script>
+
+
+function gotoDaily(){
+
+window.location="edit-daily.html";
+
+}
+
+
+function gotoHourly(){
+
+window.location="edit-hourly.html";
+
+}
+
+
+function gotoPlacement(){
+
+window.location="edit-placement.html";
+
+}
+
+function gotoHolidayManager(){
+
+window.location="holiday-manager.html";
+
+}
+
+
+</script>
+
+
+
+<script src="superfast-ui.js" defer></script>
+<script src="ultra-ui.js" defer></script>
+</body>
+
+</html>

@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Student Attendance</title>
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+
+import {
+getDatabase,
+ref,
+get
+}
+from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+
+
+const firebaseConfig = {
+
+apiKey:"AIzaSyCLdqMLxR9ZKEeS6zDHv-rkbSt-PTbDtMc",
+
+databaseURL:
+"https://attendance-tracker-7256b-default-rtdb.firebaseio.com"
+
+};
+
+const app=initializeApp(firebaseConfig);
+
+const db=getDatabase(app);
+
+
+/* semester */
+
+let sem =
+localStorage.getItem("viewSem") || "1";
+
+sem = sem.replace("sem","");
+
+
+let attendanceData={};
+let timetable={};
+let placementData={};
+let holidayData={};
+let examHolidayData={};
+
+
+
+async function loadDatabase(){
+
+attendanceData =
+(
+await get(
+ref(db,
+"semesters/"+sem+"/attendance")
+)
+).val() || {};
+
+
+timetable =
+(
+await get(
+ref(db,
+"semesters/"+sem+"/timetable")
+)
+).val() || {};
+
+
+placementData =
+(
+await get(
+ref(db,
+"semesters/"+sem+"/placement")
+)
+).val() || {};
+
+
+holidayData =
+(
+await get(
+ref(db,
+"semesters/"+sem+"/holidays")
+)
+).val() || {};
+
+
+examHolidayData =
+(
+await get(
+ref(db,
+"semesters/"+sem+"/examHoliday")
+)
+).val() || {};
+
+}
+
+
+
+/* SEARCH */
+
+window.searchAttendance =
+async function(){
+
+await loadDatabase();
+
+let from =
+document.getElementById("from").value;
+
+let to =
+document.getElementById("to").value;
+
+if(!from || !to){
+
+alert("Select date");
+
+return;
+
+}
+
+generateDaily(from,to);
+
+generateSummary(from,to);
+
+generateHourly(from,to);
+
+generateSubject(from,to);
+
+generatePlacement(from,to);
+
+generatePlacementSummary(from,to);
+
+};
+
+
+
+/* DAILY TABLE */
+
+function generateDaily(from,to){
+
+let start=new Date(from);
+
+let end=new Date(to);
+
+let html="";
+
+let i=1;
+
+while(start<=end){
+
+let date=
+start.toISOString().split("T")[0];
+
+let day=
+new Date(date)
+.toLocaleDateString(
+'en-US',
+{weekday:'long'}
+);
+
+let status="Absent";
+
+
+if(
+day=="Sunday" ||
+holidayData[date]
+){
+
+status="Holiday";
+
+}
+
+else if(
+attendanceData[date]?.fullDay=="present"
+)
+
+status="Present";
+
+
+else if(
+attendanceData[date]?.fullDay=="leave"
+)
+
+status="Holiday";
+
+
+html+=`
+
+<tr>
+
+<td>${i}</td>
+
+<td>${date}</td>
+
+<td>${day}</td>
+
+<td class="${
+status=="Present"?"present":
+status=="Absent"?"absent":"holiday"
+}">
+
+${status}
+
+</td>
+
+</tr>
+
+`;
+
+i++;
+
+start.setDate(start.getDate()+1);
+
+}
+
+document
+.getElementById("dailyTable")
+.innerHTML=html;
+
+}
+
+
+
+/* DAILY SUMMARY */
+
+function generateSummary(from,to){
+
+let start=new Date(from);
+
+let end=new Date(to);
+
+let working=0;
+let present=0;
+let absent=0;
+let holiday=0;
+
+while(start<=end){
+
+let date=
+start.toISOString().split("T")[0];
+
+let day=
+new Date(date)
+.toLocaleDateString(
+'en-US',
+{weekday:'long'}
+);
+
+
+if(
+day=="Sunday" ||
+holidayData[date]
+){
+
+holiday++;
+
+}
+
+
+else if(
+attendanceData[date]?.fullDay=="leave"
+){
+
+holiday++;
+
+}
+
+
+else{
+
+working++;
+
+if(
+attendanceData[date]?.fullDay=="present"
+)
+
+present++;
+
+else
+
+absent++;
+
+}
+
+
+start.setDate(
+start.getDate()+1
+);
+
+}
+
+
+let percent=
+working==0?0:
+((present/working)*100)
+.toFixed(2);
+
+
+document.getElementById("summaryBox")
+.innerHTML=
+
+`
+
+<div class="grid">
+
+<div>
+
+<span class="label">
+
+Start Date :
+
+</span>
+
+${from}
+
+</div>
+
+
+<div>
+
+<span class="label">
+
+End Date :
+
+</span>
+
+${to}
+
+</div>
+
+
+<div>
+
+<span class="label">
+
+Working Days :
+
+</span>
+
+${working}
+
+</div>
+
+
+<div>
+
+<span class="label">
+
+Present :
+
+</span>
+
+<span class="green">
+
+${present}
+
+</span>
+
+</div>
+
+
+<div>
+
+<span class="label">
+
+Absent :
+
+</span>
+
+<span class="red">
+
+${absent}
+
+</span>
+
+</div>
+
+
+<div>
+
+<span class="label">
+
+Holidays :
+
+</span>
+
+${holiday}
+
+</div>
+
+
+<div>
+
+<span class="label">
+
+Attendance % :
+
+</span>
+
+<span class="red">
+
+${percent} %
+
+</span>
+
+</div>
+
+
+</div>
+
+`;
+
+}
+
+
+
+/* HOURLY DETAIL */
+
+function generateHourly(from,to){
+
+let start=new Date(from);
+let end=new Date(to);
+
+let html="";
+let i=1;
+
+while(start<=end){
+
+let date=start.toISOString().split("T")[0];
+
+let day=new Date(date)
+.toLocaleDateString('en-US',{weekday:'long'});
+
+
+if(day=="Sunday" || holidayData?.[date]){
+
+start.setDate(start.getDate()+1);
+continue;
+
+}
+
+
+let subjects=timetable[day] || [];
+
+let total=0;
+let present=0;
+let absent=0;
+
+
+subjects.forEach((sub,index)=>{
+
+if(sub=="break" || sub=="lunch") return;
+
+
+/* exam holiday period */
+if(examHolidayData?.[date]?.["period"+index])
+return;
+
+
+/* full day present */
+if(attendanceData?.[date]?.fullDay=="present"){
+
+total++;
+present++;
+return;
+
+}
+
+
+/* full day absent */
+if(attendanceData?.[date]?.fullDay=="absent"){
+
+total++;
+absent++;
+return;
+
+}
+
+
+/* hourly */
+
+let val=
+attendanceData?.[date]?.hourly?.["period"+index];
+
+
+if(val=="present"){
+
+total++;
+present++;
+
+}
+
+else if(val=="absent"){
+
+total++;
+absent++;
+
+}
+
+
+/* if not marked ignore */
+
+});
+
+
+if(total>0){
+
+html+=`
+
+<tr>
+
+<td>${i}</td>
+
+<td>${date}</td>
+
+<td>${total}</td>
+
+<td class="green">${present}</td>
+
+<td class="red">${absent}</td>
+
+</tr>
+
+`;
+
+i++;
+
+}
+
+
+start.setDate(start.getDate()+1);
+
+}
+
+
+document.getElementById("hourTable").innerHTML=html;
+
+}
+
+
+
+/* SUBJECT SUMMARY */
+
+function generateSubject(from,to){
+
+let start=new Date(from);
+let end=new Date(to);
+
+let data={};
+
+while(start<=end){
+
+let date=start.toISOString().split("T")[0];
+
+let day=new Date(date)
+.toLocaleDateString('en-US',{weekday:'long'});
+
+
+if(day=="Sunday" || holidayData?.[date]){
+
+start.setDate(start.getDate()+1);
+continue;
+
+}
+
+
+let subjects=timetable[day] || [];
+
+
+subjects.forEach((sub,index)=>{
+
+
+if(sub=="break" || sub=="lunch")
+return;
+
+
+/* exam holiday period */
+if(examHolidayData?.[date]?.["period"+index])
+return;
+
+
+/* create subject */
+if(!data[sub]){
+
+data[sub]={
+total:0,
+present:0,
+absent:0
+};
+
+}
+
+
+/* full day present */
+if(attendanceData?.[date]?.fullDay=="present"){
+
+data[sub].total++;
+data[sub].present++;
+
+return;
+
+}
+
+
+/* full day absent */
+if(attendanceData?.[date]?.fullDay=="absent"){
+
+data[sub].total++;
+data[sub].absent++;
+
+return;
+
+}
+
+
+/* hourly */
+
+let val=
+attendanceData?.[date]?.hourly?.["period"+index];
+
+
+if(val=="present"){
+
+data[sub].total++;
+data[sub].present++;
+
+}
+
+else if(val=="absent"){
+
+data[sub].total++;
+data[sub].absent++;
+
+}
+
+
+/* if not marked ignore */
+
+});
+
+
+start.setDate(start.getDate()+1);
+
+}
+
+
+let html="";
+
+for(let sub in data){
+
+let s=data[sub];
+
+let percent=
+s.total==0?0:
+((s.present/s.total)*100).toFixed(1);
+
+
+html+=`
+
+<tr>
+
+<td>${sub}</td>
+
+<td>${s.total}</td>
+
+<td class="green">${s.present}</td>
+
+<td class="red">${s.absent}</td>
+
+<td>${percent}%</td>
+
+</tr>
+
+`;
+
+}
+
+
+document.getElementById("subjectTable").innerHTML=html;
+
+}
+
+
+/* PLACEMENT */
+
+function generatePlacement(from,to){
+
+let start=new Date(from);
+
+let end=new Date(to);
+
+let html="";
+
+let i=1;
+
+while(start<=end){
+
+let date=
+start.toISOString().split("T")[0];
+
+let day=
+new Date(date)
+.toLocaleDateString(
+'en-US',
+{weekday:'long'}
+);
+
+if(placementData?.[date]){
+
+let status=
+placementData[date].status;
+
+
+html+=`
+
+<tr>
+
+<td>${i}</td>
+
+<td>${date}</td>
+
+<td>${day}</td>
+
+<td class="${
+status=="present"
+?"present":"absent"
+}">
+
+${status}
+
+</td>
+
+</tr>
+
+`;
+
+i++;
+
+}
+
+start.setDate(start.getDate()+1);
+
+}
+
+
+document
+.getElementById("placementTable")
+.innerHTML=html;
+
+}
+
+
+
+/* PLACEMENT SUMMARY */
+
+function generatePlacementSummary(from,to){
+
+let start=new Date(from);
+
+let end=new Date(to);
+
+let total=0;
+let present=0;
+let absent=0;
+
+while(start<=end){
+
+let date=
+start.toISOString().split("T")[0];
+
+if(placementData?.[date]){
+
+total++;
+
+if(
+placementData[date].status=="present"
+)
+
+present++;
+
+else
+
+absent++;
+
+}
+
+
+start.setDate(start.getDate()+1);
+
+}
+
+
+let percent=
+total==0?0:
+((present/total)*100)
+.toFixed(2);
+
+
+document
+.getElementById("placementSummary")
+.innerHTML=
+
+`
+
+<div class="grid">
+
+<div>
+
+Placement Days :
+${total}
+
+</div>
+
+
+<div>
+
+Present :
+<span class="green">
+
+${present}
+
+</span>
+
+</div>
+
+
+<div>
+
+Absent :
+<span class="red">
+
+${absent}
+
+</span>
+
+</div>
+
+
+<div>
+
+Percentage :
+${percent} %
+
+</div>
+
+</div>
+
+`;
+
+}
+
+
+
+/* TABS */
+
+function show(id){
+
+document
+.querySelectorAll(".box")
+.forEach(e=>e.style.display="none");
+
+document
+.getElementById(id)
+.style.display="block";
+
+}
+
+window.show=show;
+
+</script>
+
+
+
+<style>
+
+body{
+font-family:Segoe UI;
+background:#f5f6fa;
+padding:30px;
+}
+
+h2{
+text-align:center;
+margin-bottom:20px;
+}
+
+.top{
+display:flex;
+justify-content:center;
+gap:15px;
+margin-bottom:20px;
+}
+
+button{
+background:#3fa7c6;
+border:none;
+padding:10px 18px;
+color:white;
+border-radius:5px;
+cursor:pointer;
+}
+
+.tabs{
+text-align:center;
+margin-bottom:10px;
+}
+
+.tab{
+display:inline-block;
+padding:8px 15px;
+background:#ddd;
+margin-right:5px;
+cursor:pointer;
+border-radius:5px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+background:white;
+margin-top:10px;
+}
+
+td,th{
+border:1px solid #ccc;
+padding:8px;
+text-align:center;
+}
+
+.green{
+color:#1abc9c;
+font-weight:bold;
+}
+
+.red{
+color:#e74c3c;
+font-weight:bold;
+}
+
+.present{
+color:#1abc9c;
+font-weight:bold;
+}
+
+.absent{
+color:#e74c3c;
+font-weight:bold;
+}
+
+.holiday{
+color:#d4ac0d;
+font-weight:bold;
+}
+
+.grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:20px;
+padding:20px;
+background:white;
+margin-top:10px;
+}
+
+.label{
+color:#8b0000;
+font-weight:600;
+}
+
+</style>
+
+<link rel="stylesheet" href="superfast-clean-ui.css">
+<link rel="stylesheet" href="ultra-ui.css">
+</head>
+
+
+
+<body>
+
+<h2>
+STUDENT ATTENDANCE
+</h2>
+
+
+<div class="top">
+
+From Date
+<input type="date" id="from">
+
+To Date
+<input type="date" id="to">
+
+<button onclick="searchAttendance()">
+Search
+</button>
+
+</div>
+
+
+
+<div class="tabs">
+
+<span class="tab"
+onclick="show('dailyBox')">
+
+Attendance Detail
+
+</span>
+
+
+<span class="tab"
+onclick="show('summaryMain')">
+
+Attendance Summary
+
+</span>
+
+
+<span class="tab"
+onclick="show('hourBox')">
+
+Hourly Detail
+
+</span>
+
+
+<span class="tab"
+onclick="show('subjectBox')">
+
+Hourly Summary
+
+</span>
+
+
+<span class="tab"
+onclick="show('placementBox')">
+
+Placement Detail
+
+</span>
+
+
+<span class="tab"
+onclick="show('placementSummaryBox')">
+
+Placement Summary
+
+</span>
+
+
+</div>
+
+
+
+<div id="dailyBox" class="box">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>S.No</th>
+
+<th>Date</th>
+
+<th>Day</th>
+
+<th>Status</th>
+
+</tr>
+
+</thead>
+
+<tbody id="dailyTable"></tbody>
+
+</table>
+
+</div>
+
+
+
+<div id="summaryMain"
+class="box"
+style="display:none">
+
+<div id="summaryBox"></div>
+
+</div>
+
+
+
+<div id="hourBox"
+class="box"
+style="display:none">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>S.No</th>
+
+<th>Date</th>
+
+<th>TotalHours</th>
+
+<th>Present</th>
+
+<th>Absent</th>
+
+</tr>
+
+</thead>
+
+<tbody id="hourTable"></tbody>
+
+</table>
+
+</div>
+
+
+
+<div id="subjectBox"
+class="box"
+style="display:none">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Subject</th>
+
+<th>Total Class</th>
+
+<th>Present</th>
+
+<th>Absent</th>
+
+<th>%</th>
+
+</tr>
+
+</thead>
+
+<tbody id="subjectTable"></tbody>
+
+</table>
+
+</div>
+
+
+
+<div id="placementBox"
+class="box"
+style="display:none">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>S.No</th>
+
+<th>Date</th>
+
+<th>Day</th>
+
+<th>Status</th>
+
+</tr>
+
+</thead>
+
+<tbody id="placementTable"></tbody>
+
+</table>
+
+</div>
+
+
+
+<div id="placementSummaryBox"
+class="box"
+style="display:none">
+
+<div id="placementSummary"></div>
+
+</div>
+
+
+
+<script src="superfast-ui.js" defer></script>
+<script src="ultra-ui.js" defer></script>
+</body>
+
+</html>

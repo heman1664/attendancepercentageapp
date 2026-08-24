@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<title>Login</title>
+
+<style>
+
+body{
+
+margin:0;
+
+height:100vh;
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+font-family:Segoe UI;
+
+background:
+
+linear-gradient(
+rgba(70,0,120,0.65),
+rgba(30,0,80,0.85)
+),
+
+url("https://images.unsplash.com/photo-1506744038136-46273834b3fb");
+
+background-size:cover;
+
+background-position:center;
+
+}
+
+
+
+/* glass card */
+
+.container{
+
+width:320px;
+
+padding:35px;
+
+border-radius:20px;
+
+background:rgba(255,255,255,0.12);
+
+backdrop-filter:blur(15px);
+
+box-shadow:0 0 25px rgba(0,0,0,0.25);
+
+text-align:center;
+
+}
+
+
+
+/* title */
+
+h2{
+
+color:white;
+
+margin-bottom:25px;
+
+}
+
+
+
+/* input group */
+
+.input-box{
+
+width:100%;
+
+position:relative;
+
+margin-bottom:18px;
+
+display:flex;
+
+align-items:center;
+
+}
+
+
+
+/* textbox */
+
+input{
+
+width:100%;
+
+padding:12px 45px 12px 18px;
+
+border-radius:25px;
+
+border:none;
+
+outline:none;
+
+font-size:14px;
+
+background:rgba(255,255,255,0.25);
+
+color:white;
+
+}
+
+
+
+/* placeholder */
+
+input::placeholder{
+
+color:#eee;
+
+}
+
+
+
+/* icons */
+
+.icon{
+
+position:absolute;
+
+right:18px;
+
+top:50%;
+
+transform:translateY(-50%);
+
+font-size:16px;
+
+color:white;
+
+}
+
+
+
+/* button */
+
+button{
+
+width:100%;
+
+padding:12px;
+
+border:none;
+
+border-radius:25px;
+
+font-size:15px;
+
+cursor:pointer;
+
+color:white;
+
+background:
+
+linear-gradient(
+120deg,
+#8b5cf6,
+#a855f7,
+#7c3aed
+);
+
+background-size:250%;
+
+transition:0.3s;
+
+}
+
+
+
+/* hover gradient move */
+
+button:hover{
+
+animation:move 2s linear infinite;
+
+}
+
+
+
+@keyframes move{
+
+0%{background-position:0%}
+100%{background-position:200%}
+
+}
+
+
+
+/* error */
+
+#error{
+
+color:#ffd1d1;
+
+font-size:13px;
+
+margin-top:10px;
+
+}
+
+</style>
+
+<link rel="stylesheet" href="superfast-clean-ui.css">
+<link rel="stylesheet" href="ultra-ui.css">
+</head>
+
+
+
+<body>
+
+
+
+<div class="container">
+
+<h2>Login Page</h2>
+
+
+
+<div class="input-box">
+
+<input id="username"
+
+placeholder="Username">
+
+<span class="icon">👤</span>
+
+</div>
+
+
+
+<div class="input-box">
+
+<input id="password"
+
+type="password"
+
+placeholder="Password">
+
+<span class="icon">🔒</span>
+
+</div>
+
+
+
+<button onclick="login()">
+
+Login
+
+</button>
+
+
+
+<p id="error"></p>
+
+</div>
+
+
+
+<script>
+
+function login(){
+
+let u=username.value;
+
+let p=password.value;
+
+
+/* demo login */
+
+if(u=="admin" && p=="1234"){
+
+window.location="dashboard.html";
+
+}
+
+else if(u=="monitor" && p=="1234")
+{
+    localStorage.setItem(
+"monitorLogged",
+"yes"
+);
+
+window.location=
+"monitor-dashboard.html";
+
+}
+else{
+
+error.innerText=
+
+"Invalid Username or Password";
+
+}
+
+}
+
+</script>
+
+
+
+<script src="superfast-ui.js" defer></script>
+<script src="ultra-ui.js" defer></script>
+</body>
+
+</html>

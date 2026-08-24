@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<title>Holiday Manager</title>
+
+<meta name="viewport"
+content="width=device-width,initial-scale=1">
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+
+import {
+getDatabase,
+ref,
+set,
+update,
+get
+}
+from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+
+
+const firebaseConfig = {
+
+apiKey:"AIzaSyCLdqMLxR9ZKEeS6zDHv-rkbSt-PTbDtMc",
+
+databaseURL:
+"https://attendance-tracker-7256b-default-rtdb.firebaseio.com"
+
+};
+
+
+const app=initializeApp(firebaseConfig);
+
+const db=getDatabase(app);
+
+
+/* load semester */
+
+let sem =
+localStorage.getItem("viewSem") || "1";
+
+
+/* change semester */
+
+window.setSem=function(){
+
+sem =
+document.getElementById("sem").value;
+
+/* save globally */
+
+localStorage.setItem(
+"viewSem",
+sem
+);
+
+};
+
+
+
+/* auto load saved semester */
+
+window.onload=function(){
+
+let savedSem =
+localStorage.getItem("viewSem");
+
+if(savedSem){
+
+document.getElementById("sem").value =
+savedSem;
+
+sem = savedSem;
+
+}
+
+};
+
+
+
+/* add full day holiday */
+
+window.addFullHoliday =
+async function(){
+
+let date=
+document.getElementById("holidayDate").value;
+
+
+if(!date){
+
+alert("Select date");
+
+return;
+
+}
+
+
+/* save */
+
+await set(
+
+ref(
+db,
+"semesters/"+sem+"/holidays/"+date
+),
+
+true
+
+);
+
+
+alert("Holiday added in Sem "+sem);
+
+};
+
+
+
+/* load periods from timetable */
+
+window.loadExamPeriods =
+async function(){
+
+let date =
+document.getElementById("examDate").value;
+
+
+if(!date){
+
+return;
+
+}
+
+
+let day=
+new Date(date)
+.toLocaleDateString(
+'en-US',
+{weekday:'long'}
+);
+
+
+/* get timetable */
+
+let table =
+(
+await get(
+ref(
+db,
+"semesters/"+sem+"/timetable/"+day
+)
+)
+).val() || [];
+
+
+let html="";
+
+
+table.forEach((sub,i)=>{
+
+
+if(
+sub!="break" &&
+sub!="lunch"
+){
+
+html+=`
+
+<label>
+
+<input
+type="checkbox"
+class="period"
+value="period${i}">
+
+Period ${i+1}
+(${sub})
+
+</label>
+
+<br>
+
+`;
+
+}
+
+});
+
+
+document
+.getElementById("periodBox")
+.innerHTML=html;
+
+};
+
+
+
+/* save exam holiday */
+
+window.addExamHoliday =
+async function(){
+
+let date=
+document.getElementById("examDate").value;
+
+
+if(!date){
+
+alert("Select date");
+
+return;
+
+}
+
+
+let periods=
+document.querySelectorAll(".period:checked");
+
+
+if(periods.length==0){
+
+alert("Select period");
+
+return;
+
+}
+
+
+let data={};
+
+
+periods.forEach(p=>{
+
+data[p.value]=true;
+
+});
+
+
+/* save */
+
+await update(
+
+ref(
+db,
+"semesters/"+sem+"/examHoliday/"+date
+),
+
+data
+
+);
+
+
+alert("Exam holiday saved in Sem "+sem);
+
+};
+
+
+</script>
+
+
+
+<style>
+
+body{
+
+font-family:Segoe UI;
+
+background:#f5f6fa;
+
+padding:20px;
+
+}
+
+
+h2{
+
+text-align:center;
+
+margin-bottom:20px;
+
+}
+
+
+.box{
+
+background:white;
+
+padding:20px;
+
+margin-bottom:20px;
+
+border-radius:8px;
+
+box-shadow:0 0 5px rgba(0,0,0,0.05);
+
+}
+
+
+button{
+
+background:#3fa7c6;
+
+border:none;
+
+padding:10px 18px;
+
+color:white;
+
+border-radius:5px;
+
+cursor:pointer;
+
+margin-top:10px;
+
+}
+
+
+select,input{
+
+padding:8px;
+
+margin-top:5px;
+
+}
+
+
+#periodBox{
+
+margin-top:10px;
+
+}
+
+
+/* mobile */
+
+@media(max-width:600px){
+
+body{
+
+padding:10px;
+
+}
+
+}
+
+</style>
+
+
+
+<link rel="stylesheet" href="superfast-clean-ui.css">
+<link rel="stylesheet" href="ultra-ui.css">
+</head>
+
+
+
+<body>
+
+
+<h2>
+
+Holiday Manager
+
+</h2>
+
+
+
+<div class="box">
+
+<h3>
+
+Select Semester
+
+</h3>
+
+
+<select
+id="sem"
+onchange="setSem()">
+
+<option value="1">Sem 1</option>
+<option value="2">Sem 2</option>
+<option value="3">Sem 3</option>
+<option value="4">Sem 4</option>
+<option value="5">Sem 5</option>
+<option value="6">Sem 6</option>
+<option value="7">Sem 7</option>
+<option value="8">Sem 8</option>
+
+</select>
+
+</div>
+
+
+
+<div class="box">
+
+<h3>
+
+Add Full Day Holiday
+
+</h3>
+
+
+<input
+type="date"
+id="holidayDate">
+
+
+<br>
+
+
+<button onclick="addFullHoliday()">
+
+Save Holiday
+
+</button>
+
+</div>
+
+
+
+<div class="box">
+
+<h3>
+
+Add Exam Period Holiday
+
+</h3>
+
+
+<input
+type="date"
+id="examDate"
+onchange="loadExamPeriods()">
+
+
+<div id="periodBox">
+
+Select date first
+
+</div>
+
+
+<button onclick="addExamHoliday()">
+
+Save Exam Holiday
+
+</button>
+
+</div>
+
+
+
+<script src="superfast-ui.js" defer></script>
+<script src="ultra-ui.js" defer></script>
+</body>
+
+</html>

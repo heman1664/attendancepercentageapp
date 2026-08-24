@@ -1,0 +1,81 @@
+<link rel="stylesheet" href="superfast-clean-ui.css">
+<!DOCTYPE html>
+
+<html>
+
+<body>
+
+<h2>Firebase Test</h2>
+
+<button onclick="sendData()">
+
+Send Test Data
+
+</button>
+
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+
+import {
+getDatabase,
+ref,
+set
+}
+from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+
+
+const firebaseConfig = {
+
+apiKey: "AIzaSyCLdqMLxR9ZKEeS6zDHv-rkbSt-PTbDtMc",
+
+authDomain: "attendance-tracker-7256b.firebaseapp.com",
+
+databaseURL:
+"https://attendance-tracker-7256b-default-rtdb.firebaseio.com",
+
+projectId: "attendance-tracker-7256b",
+
+storageBucket: "attendance-tracker-7256b.appspot.com",
+
+messagingSenderId: "512459479971",
+
+appId: "1:512459479971:web:3e69c4b1cc84388fce9816"
+
+};
+
+
+const app = initializeApp(firebaseConfig);
+
+const db = getDatabase(app);
+
+
+window.sendData = function(){
+
+set(
+
+ref(db,"test"),
+
+{
+
+name:"working",
+
+time:new Date().toString()
+
+}
+
+);
+
+alert("data uploaded");
+
+}
+
+</script>
+
+<script src="superfast-ui.js" defer></script>
+<script src="ultra-ui.js" defer></script>
+</body>
+
+</html>

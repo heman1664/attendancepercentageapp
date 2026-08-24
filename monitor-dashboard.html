@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Monitor Dashboard</title>
+
+<style>
+
+body{
+
+margin:0;
+height:100vh;
+
+display:flex;
+justify-content:center;
+align-items:center;
+
+font-family:Segoe UI;
+
+background:
+
+linear-gradient(
+rgba(70,0,120,0.65),
+rgba(30,0,80,0.85)
+),
+
+url("https://images.unsplash.com/photo-1506744038136-46273834b3fb");
+
+}
+
+
+
+/* card */
+
+.box{
+
+width:360px;
+
+padding:30px;
+
+border-radius:20px;
+
+background:rgba(255,255,255,0.1);
+
+color:white;
+
+text-align:center;
+
+}
+
+
+
+/* buttons */
+
+.sem{
+
+width:80px;
+
+height:80px;
+
+margin:8px;
+
+border:none;
+
+border-radius:20px;
+
+cursor:pointer;
+
+color:white;
+
+font-size:18px;
+
+background:
+
+linear-gradient(
+120deg,
+#8b5cf6,
+#a855f7,
+#7c3aed
+);
+
+}
+
+
+
+/* grid */
+
+.grid{
+
+display:flex;
+
+flex-wrap:wrap;
+
+justify-content:center;
+
+}
+
+</style>
+
+<link rel="stylesheet" href="superfast-clean-ui.css">
+<link rel="stylesheet" href="ultra-ui.css">
+</head>
+
+
+
+<body>
+
+
+
+<div class="box">
+
+
+<h2>Select Semester</h2>
+
+
+
+<div class="grid">
+
+
+<button class="sem"
+onclick="openSem(1)">1</button>
+
+<button class="sem"
+onclick="openSem(2)">2</button>
+
+<button class="sem"
+onclick="openSem(3)">3</button>
+
+<button class="sem"
+onclick="openSem(4)">4</button>
+
+<button class="sem"
+onclick="openSem(5)">5</button>
+
+<button class="sem"
+onclick="openSem(6)">6</button>
+
+<button class="sem"
+onclick="openSem(7)">7</button>
+
+<button class="sem"
+onclick="openSem(8)">8</button>
+
+
+</div>
+
+
+
+</div>
+
+
+
+<script>
+
+
+if(
+localStorage.getItem(
+"monitorLogged"
+)!="yes"
+){
+
+window.location=
+"monitor-login.html";
+
+}
+
+
+
+function openSem(n){
+
+localStorage.setItem(
+"viewSem",
+"sem"+n
+);
+
+window.location=
+"percentage.html";
+
+}
+
+</script>
+
+
+
+<script src="superfast-ui.js" defer></script>
+<script src="ultra-ui.js" defer></script>
+</body>
+
+</html>
